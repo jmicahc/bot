@@ -2,13 +2,14 @@
   (:require [midje.sweet :refer :all]
             [uncomplicate.fluokitten.core :refer [fmap! fold bind op bind! fmap]]
             [uncomplicate.neanderthal.internal
-             [api :refer [Blas Matrix]]]
+             [api :as api :refer [Blas VectorMath]]]
             [uncomplicate.neanderthal
              [block :refer [buffer]]
              [core :refer :all]
              [native :refer :all]
              [math :refer [sin cos]]])
   (:import [java.nio ByteBuffer ByteOrder]
+           [uncomplicate.neanderthal.internal.api Matrix RealNativeMatrix]
            clojure.lang.ExceptionInfo))
 
 
@@ -68,37 +69,32 @@
     (transfer! (view-vctr mat) ret)
     ret))
 
-(defn dge-of [])
-
 
 (defn mul
   ([a b]
    (cond
      (and (number? a) (number? b)) (* a b)
-     (cond (number? a) (number? b))
-     (mm (dge (mrows b) (ncols b) (repeat a)) b)
+     (and (number? a) (matrix? b)) (scal a b)
+     (and (matrix? a) (number? b)) (scal b a))))
 
-     ())))
 
-VectorMath
+(def v (dv [1 2 3]))
+
+
+(mul (dge 4 4 (repeat 1.0)) 10)
+
+
+(scal 2 (dge 4 4 (repeat 1)))
+
+
 
 (def m (dge 10 10))
-(type m)
-q
-
-(mrows (reshape m 20 5))
-
 
 
 (defn transform [points tf]
   (let [ret (dge (mrows points) 4 (repeat 1))]
     (copy! points (submatrix ret 0 0 (mrows points) 3))
     (mm ret tf)))
-
-
-
-
-
 
 
 (defn test-vctr-transfer []
@@ -122,11 +118,6 @@ q
      (seq (transfer! x1 (double-array 2))) => (seq (double-array [1 2]))
      (transfer! y1 x0) => x2
      (transfer! x2 y0) => y2)))
-
-
-(test-vctr-t
-
-(transform points tf)
 
 
 
